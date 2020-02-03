@@ -12,11 +12,10 @@ class App {
   middlewares() {
     this.server.use(express.json());
   }
-  
+
   routes() {
     this.server.use(routes);
   }
 }
 
 export default new App().server;
-
