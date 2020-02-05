@@ -19,7 +19,7 @@ class UserController {
     const user = await User.findByPk(req.userId);
 
     // eslint-disable-next-line eqeqeq
-    if (email != user.email) {
+    if (email && email != user.email) {
       const userExists = await User.findOne({ where: { email } });
 
       if (userExists) {
