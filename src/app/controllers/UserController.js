@@ -25,7 +25,12 @@ class UserController {
 
     const { id, name, email, provider } = await User.create(req.body);
 
-    return res.json({ id, name, email, provider });
+    return res.json({
+      id,
+      name,
+      email,
+      provider,
+    });
   }
 
   async update(req, res) {
@@ -35,9 +40,12 @@ class UserController {
       oldPassword: Yup.string().min(6),
       password: Yup.string()
         .min(6)
-        .when('oldOassword', (oldPassword, field) =>
+        .when('oldPassword', (oldPassword, field) =>
           oldPassword ? field.required() : field
         ),
+      confirmPassword: Yup.string().when('password', (password, field) =>
+        password ? field.required().oneOf([Yup.ref('password')]) : field
+      ),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -48,8 +56,7 @@ class UserController {
 
     const user = await User.findByPk(req.userId);
 
-    // eslint-disable-next-line eqeqeq
-    if (email && email != user.email) {
+    if (email && email !== user.email) {
       const userExists = await User.findOne({ where: { email } });
 
       if (userExists) {
