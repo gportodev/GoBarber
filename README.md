@@ -1,2 +1,2 @@
 # GoBarber
-Bootcamp Go Stack 2020
+Aplicação de agendamento de salão de beleza
