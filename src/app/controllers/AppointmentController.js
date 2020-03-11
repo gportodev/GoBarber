@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import { startOfHour, parseISO, isBefore } from 'date-fns';
 import Appointment from '../models/Appointment';
 import User from '../models/User';
 
@@ -29,10 +30,38 @@ class AppointmentController {
         .json({ error: 'Precisa de um provider para fazer agendamentos!' });
     }
 
+    /**
+     * Check for past dates
+     */
+
+    const hourStart = startOfHour(parseISO(date));
+
+    if (isBefore(hourStart, new Date())) {
+      return res
+        .status(400)
+        .json({ error: 'Datas antigas não são permitidas!' });
+    }
+
+    /**
+     * Check date availability
+     */
+
+    const checkAvailability = await Appointment.findOne({
+      where: {
+        provider_id,
+        canceled_at: null,
+        date: hourStart,
+      },
+    });
+
+    if (checkAvailability) {
+      return res.status(400).json({ error: 'Agendamento indisponível!' });
+    }
+
     const appointment = await Appointment.create({
       user_id: req.user_id,
       provider_id,
-      date,
+      date: hourStart,
     });
 
     return res.json(appointment);

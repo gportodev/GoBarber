@@ -14,13 +14,17 @@ class UserController {
     });
 
     if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation fails. ' });
+      return res.status(400).json({
+        error: 'Cadastro incompleto! Por favor preencha todos os campos!',
+      });
     }
 
     const userExists = await User.findOne({ where: { email: req.body.email } });
 
     if (userExists) {
-      return res.status(400).json({ error: 'User already exists. ' });
+      return res.status(400).json({
+        error: 'E-mail já cadastrado! Por favor utilize outro e-mail!',
+      });
     }
 
     const { id, name, email, provider } = await User.create(req.body);
@@ -56,7 +60,7 @@ class UserController {
 
     const user = await User.findByPk(req.userId);
 
-    if (email && email != user.email) {
+    if (email && email !== user.email) {
       const userExists = await User.findOne({ where: { email } });
 
       if (userExists) {
