@@ -42,10 +42,26 @@ class AppointmentController {
     });
 
     if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Dados incorretos!' });
+      return res.status(400).json({
+        error: 'Cadastro incompleto! Por favor preencha todos os campos!',
+      });
     }
 
     const { provider_id, date } = req.body;
+
+    /**
+     * Checa se o user_id não está marcando um agendamento com ele mesmo
+     */
+
+    const isUser = await User.findOne({
+      where: { id: provider_id, provider: true },
+    });
+
+    if (isUser.id === provider_id) {
+      return res
+        .status(401)
+        .json({ error: 'Não pode fazer agendamentos com você mesmo!' });
+    }
 
     /**
      * Checa se o provider_id é um provider
@@ -62,7 +78,7 @@ class AppointmentController {
     }
 
     /**
-     * Check for past dates
+     * Checa datas que já passaram
      */
 
     const hourStart = startOfHour(parseISO(date));
@@ -74,7 +90,7 @@ class AppointmentController {
     }
 
     /**
-     * Check date availability
+     * Checa disponibilidade de datas
      */
 
     const checkAvailability = await Appointment.findOne({
@@ -96,7 +112,7 @@ class AppointmentController {
     });
 
     /**
-     * Notify appointment provider
+     * Notifica provider do agendamento
      */
     const user = await User.findByPk(req.userId);
     const formattedDate = format(
